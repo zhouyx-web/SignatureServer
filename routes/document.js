@@ -9,7 +9,7 @@ const documentModel = require('../models/documentModel')
 const router = express.Router();
 
 // 文档存储路径
-const dirDocsPath = path.join(__dirname, '..', 'public/upload/docs')
+const dirDocsPath = path.join(__dirname, '..', 'public/upload/docs').replace(/\\/g, '/')
 // 配置存储路径和文件名 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -44,22 +44,42 @@ const uploadSingle = upload.single('file')
 
 // 注册路由
 router.post('/upload', (req, res, next) => {
-    uploadSingle(req, res, function (err) { //错误处理
-        if (err) {
+    uploadSingle(req, res, function (err) {
+        if (err) { // upload err
             return res.send({
                 status: 1,
                 msg: '上传文件失败'
             })
         }
+        // upload success
         var file = req.file
-        res.send({
-            status: 0,
-            data: {
-                name: file.filename,
-                url: dirDocsPath +'/'+ file.filename
-            }
-        })
-
+        // add file info to table named documents of mysql database
+        const fileInfo = {
+            doc_id: uuid.v1(),
+            doc_name: file.filename,
+            doc_dest: dirDocsPath, 
+            doc_state: 0, // 创建
+            doc_title: file.originalname
+        }
+        documentModel.create(fileInfo)
+            .then(() => { // 写入数据库成功
+                res.send({
+                    status: 0,
+                    data: {
+                        name: file.filename,
+                        url: dirDocsPath +'/'+ file.filename,
+                        fileInfo
+                    }
+                })
+            })
+            .catch(err => { // 写入数据库失败
+                // 删除已经上传的文件
+                console.log(err)
+                res.send({
+                    status: 2,
+                    msg: '上传文件失败'
+                })
+            })
     })
 })
 

@@ -25,12 +25,23 @@
          })        
      },
      /**
-      * 创建一个用户，返回创建的用户的对象
-      * @param {*} username 
-      * @param {*} password 
+      * 创建一个文件数据，返回创建的对象
+      * @param {*} fileObj 包含doc_id, doc_name, doc_dest, doc_state, doc_title的对象
+      * @returns promise
       */
-     create(username, password) {
- 
+     create(fileObj) {
+        const {doc_id, doc_name, doc_dest, doc_state, doc_title} = fileObj
+        const sql = `INSERT INTO documents (doc_id, doc_name, doc_dest, doc_state, doc_title) VALUES ('${doc_id}', '${doc_name}', '${doc_dest}', ${doc_state}, '${doc_title}');`
+        return new Promise ((resolve, reject) => {
+            customMysql.query(sql)
+            .then(results => {
+                // 插入结果
+                resolve(results)
+            })
+            .catch(err => { // 将错误一直传递下去，在路由中处理
+                reject(err)
+            })
+        }) 
      },
      /**
       * 修改用户密码，返回修改后的用户对象

@@ -10,31 +10,11 @@ var dbConfig = require('./mysqlConfig');
 var pool = mysql.createPool(dbConfig);
 
 /**
- * 对query执行的结果自定义返回JSON结果
- */
-function responseDoReturn(res, result, resultJSON) {
-    if (typeof result === 'undefined') {
-        res.json({
-            code: '201',
-            msg: 'failed to do'
-        });
-    } else {
-        res.json(result);
-    }
-};
-
-/**
- * 
- * sql 
- * callback 外部传入的数据处理函数
- */
-/**
  * 封装query之sql带不占位符func
  * @param {*} sql sql查询语句
- * @param {*} callback 
  * @returns promise
  */
-function query(sql, callback) {
+function query(sql) {
     // 连接数据库
     return new Promise((resolve, reject) => {
         pool.getConnection(function (err, connection) {
@@ -76,5 +56,4 @@ function queryArgs(sql, args, callback) {
 module.exports = {
     query: query,
     queryArgs: queryArgs,
-    doReturn: responseDoReturn
 }
