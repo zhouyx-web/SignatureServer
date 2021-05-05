@@ -57,7 +57,7 @@ router.post('/upload', (req, res, next) => {
         const fileInfo = {
             doc_id: uuid.v1(),
             doc_name: file.filename,
-            doc_dest: dirDocsPath, 
+            doc_dest: dirDocsPath,
             doc_state: 0, // 创建
             doc_title: file.originalname
         }
@@ -67,19 +67,49 @@ router.post('/upload', (req, res, next) => {
                     status: 0,
                     data: {
                         name: file.filename,
-                        url: dirDocsPath +'/'+ file.filename,
+                        url: dirDocsPath + '/' + file.filename,
                         fileInfo
                     }
                 })
             })
             .catch(err => { // 写入数据库失败
-                // 删除已经上传的文件
                 console.log(err)
                 res.send({
                     status: 2,
                     msg: '上传文件失败'
                 })
             })
+    })
+})
+
+router.post('/delete', (req, res) => {
+    const { doc_name, doc_id } = req.body
+    // 删除数据库中的文件数据
+    documentModel.delete(doc_id)
+    .then(() => {
+        // 删除磁盘中的文件
+        fs.unlink(path.join(dirDocsPath, name), (err) => {
+            if (err) {
+                console.log(err)
+                res.send({
+                    status: 1,
+                    msg: '删除文件失败'
+                })
+            } else {
+                res.send({
+                    status: 0,
+                    msg: '删除文件成功'
+                })
+            }
+        })
+
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({
+            status: 2,
+            msg: '删除文件失败'
+        })
     })
 })
 
