@@ -11,8 +11,8 @@ const documentTask = {
      * @param {*} password 密码
      * @returns promise
      */
-    findOne(username, password) {
-        const sql = `select * from users where username='${username}' and password='${password}'`
+    findOne(doc_id) {
+        const sql = `select * from documents where doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -31,7 +31,7 @@ const documentTask = {
      */
     create(fileObj) {
         const { doc_id, doc_name, doc_path, doc_status } = fileObj
-        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', ${doc_status});`
+        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', '${doc_status}');`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -59,6 +59,25 @@ const documentTask = {
                 .catch(err => { // 将错误一直传递下去，在路由中处理
                     reject(err)
                 })
+        })
+    },
+    /**
+     * 签署文档预发布
+     * 设置：doc_name, doc_mode, creator_id, max_sign_num, re_sign
+     * @param {*} updateOptions 对数据库中的文档信息进行更新
+     * @returns promise
+     */
+    prepareReleaseUpdate(updateOptions){
+        const { doc_name, doc_mode, creator_id, max_sign_num, re_sign, doc_id } = updateOptions
+        const sql = `UPDATE documents SET doc_name='${doc_name}', doc_status='unpublish', doc_mode='${doc_mode}', creator_id='${creator_id}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(doc => {
+                resolve(doc)
+            })
+            .catch(err => {
+                reject(err)
+            })
         })
     }
 }

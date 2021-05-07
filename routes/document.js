@@ -46,7 +46,7 @@ const upload = multer({ storage, limits, fileFilter })
 // 表单的name属性值
 const uploadSingle = upload.single('file')
 
-// 注册路由
+// 文件上传
 router.post('/upload', (req, res, next) => {
     uploadSingle(req, res, function (err) {
         if (err) { // upload err
@@ -61,7 +61,7 @@ router.post('/upload', (req, res, next) => {
             doc_id: file.filename,
             doc_name: file.originalname,
             doc_path: dirDocsPath,
-            doc_status: 0, // 创建
+            doc_status: 'create', // 创建
         }
         documentModel.create(fileInfo)
             .then(() => { // 写入数据库成功
@@ -80,6 +80,7 @@ router.post('/upload', (req, res, next) => {
     })
 })
 
+// 文件删除
 router.post('/delete', (req, res) => {
     const { doc_id } = req.body
     // 删除数据库中的文件数据
@@ -108,6 +109,33 @@ router.post('/delete', (req, res) => {
             status: 2,
             msg: '删除文件失败'
         })
+    })
+})
+
+// 文档预发布，保存设置信息
+router.post('/release/first', (req, res, next) => {
+    const updateOptions = req.body
+    const {doc_id} = updateOptions
+    console.log(doc_id)
+    // 文档是否存在
+    documentModel.findOne(doc_id)
+    .then(item => {
+        if(item){// exists doc, update doc_id
+            documentModel.prepareReleaseUpdate(updateOptions)
+            .then(doc => {
+                res.send({status:0, data:doc})
+            })
+            .catch(err => {
+                console.log(err)
+                res.send({status:2, msg:'数据库操作出错'})
+            })
+        } else {
+            res.send({status:1, msg:'文档不存在'})
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({status:2, msg:'数据库操作出错'})
     })
 })
 
