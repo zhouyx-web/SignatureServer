@@ -1,12 +1,11 @@
-const express = require('express');
+const express = require('express')
 const multer = require('multer')
-const uuid = require('uuid')
 const path = require('path')
 const fs = require('fs')
 
 const documentModel = require('../models/documentModel')
 
-const router = express.Router();
+const router = express.Router()
 
 // 文档存储路径
 const dirDocsPath = path.join(__dirname, '..', 'public/upload/docs').replace(/\\/g, '/')
@@ -32,13 +31,18 @@ const storage = multer.diskStorage({
     }
 })
 // 文件过滤 未找到使用方式
-// const fileFilter = (req, file, cb) => {
-
-// }
+const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    if(ext !== '.pdf'){
+        cb(new Error('只支持上传pdf文件类型！'), false)
+    } else {
+        cb(null, true)
+    }
+}
 // 文件上传限制
 const limits = { fileSize: '5MB' }
 // 根据配置 创建multer对象
-const upload = multer({ storage, limits })
+const upload = multer({ storage, limits, fileFilter })
 // 表单的name属性值
 const uploadSingle = upload.single('file')
 
@@ -48,28 +52,22 @@ router.post('/upload', (req, res, next) => {
         if (err) { // upload err
             return res.send({
                 status: 1,
-                msg: '上传文件失败'
+                msg: err
             })
         }
         // upload success
         var file = req.file
-        // add file info to table named documents of mysql database
         const fileInfo = {
-            doc_id: uuid.v1(),
-            doc_name: file.filename,
-            doc_dest: dirDocsPath,
-            doc_state: 0, // 创建
-            doc_title: file.originalname
+            doc_id: file.filename,
+            doc_name: file.originalname,
+            doc_path: dirDocsPath,
+            doc_status: 0, // 创建
         }
         documentModel.create(fileInfo)
             .then(() => { // 写入数据库成功
                 res.send({
                     status: 0,
-                    data: {
-                        name: file.filename,
-                        url: dirDocsPath + '/' + file.filename,
-                        fileInfo
-                    }
+                    data: fileInfo,
                 })
             })
             .catch(err => { // 写入数据库失败
@@ -83,12 +81,12 @@ router.post('/upload', (req, res, next) => {
 })
 
 router.post('/delete', (req, res) => {
-    const { doc_name, doc_id } = req.body
+    const { doc_id } = req.body
     // 删除数据库中的文件数据
     documentModel.delete(doc_id)
     .then(() => {
         // 删除磁盘中的文件
-        fs.unlink(path.join(dirDocsPath, name), (err) => {
+        fs.unlink(path.join(dirDocsPath, doc_id), (err) => {
             if (err) {
                 console.log(err)
                 res.send({

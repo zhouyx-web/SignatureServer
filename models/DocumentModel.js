@@ -30,8 +30,8 @@ const documentTask = {
      * @returns promise
      */
     create(fileObj) {
-        const { doc_id, doc_name, doc_dest, doc_state, doc_title } = fileObj
-        const sql = `INSERT INTO documents (doc_id, doc_name, doc_dest, doc_state, doc_title) VALUES ('${doc_id}', '${doc_name}', '${doc_dest}', ${doc_state}, '${doc_title}');`
+        const { doc_id, doc_name, doc_path, doc_status } = fileObj
+        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', ${doc_status});`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
