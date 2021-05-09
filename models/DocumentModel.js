@@ -25,13 +25,31 @@ const documentTask = {
         })
     },
     /**
+     * 
+     * @param {*} doc_status 文档状态 create,unpublish,ongoing,end
+     * @returns promise
+     */
+    find(doc_status){
+        const sql = `select * from documents where doc_status='${doc_status}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+                .then(results => {
+                    // 这个results可能是个空数组
+                    resolve(results)
+                })
+                .catch(err => { // 将错误一直传递下去，在路由中处理
+                    reject(err)
+                })
+        })
+    },
+    /**
      * 创建一个文件数据，返回创建的对象
      * @param {*} fileObj 包含doc_id, doc_name, doc_dest, doc_state, doc_title的对象
      * @returns promise
      */
     create(fileObj) {
-        const { doc_id, doc_name, doc_path, doc_status } = fileObj
-        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', '${doc_status}');`
+        const { doc_id, doc_name, doc_path, doc_status, create_time } = fileObj
+        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status, create_time) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', '${doc_status}', '${create_time}');`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -69,7 +87,7 @@ const documentTask = {
      */
     prepareReleaseUpdate(updateOptions){
         const { doc_name, doc_mode, creator_id, max_sign_num, re_sign, doc_id } = updateOptions
-        const sql = `UPDATE documents SET doc_name='${doc_name}', doc_status='unpublish', doc_mode='${doc_mode}', creator_id='${creator_id}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
+        const sql = `UPDATE documents SET doc_name='${doc_name}', doc_mode='${doc_mode}', creator_id='${creator_id}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {
@@ -87,7 +105,7 @@ const documentTask = {
      */
     signAreaUpdata(options){
         const {sign_area, doc_id} = options
-        const sql = `UPDATE documents SET sign_area='${sign_area}' WHERE doc_id='${doc_id}';`
+        const sql = `UPDATE documents SET sign_area='${sign_area}', doc_status='unpublish' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {

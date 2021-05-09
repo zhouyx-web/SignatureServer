@@ -61,6 +61,7 @@ router.post('/upload', (req, res, next) => {
             doc_id: file.filename,
             doc_name: file.originalname,
             doc_path: dirDocsPath,
+            create_time: Date.now(),
             doc_status: 'create', // 创建
         }
         documentModel.create(fileInfo)
@@ -195,6 +196,28 @@ router.post('/release/end', (req, res, next) => {
 // 面签结束
 router.post('/complete', (req, res, next) => {
     // 设置文档状态为end 合成签署后的文档
+})
+
+// 根据doc_status获取文档列表供前台显示
+router.get('/list', (req, res, next) => {
+    const {doc_status} = req.query
+    console.log(doc_status)
+    documentModel.find(doc_status)
+    .then(results => {
+        console.log(results[0].sign_area)
+        res.send({
+            status:0,
+            length:results.length,
+            data:results
+        })
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({
+            status:1,
+            msg:'服务器错误！'
+        })
+    })
 })
 
 module.exports = router;
