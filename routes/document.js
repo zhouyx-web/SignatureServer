@@ -139,4 +139,62 @@ router.post('/release/first', (req, res, next) => {
     })
 })
 
+// 设置签署面签区域
+router.post('/release/second', (req, res, next) => {
+    const signArea = req.body
+    const {sign_area, doc_id} = signArea
+    console.log(sign_area, doc_id)
+    // 文档是否存在
+    documentModel.findOne(doc_id)
+    .then(item => {
+        if(item){// exists doc, update doc_id
+            documentModel.signAreaUpdata(signArea)
+            .then(doc => {
+                res.send({status:0, data:doc})
+            })
+            .catch(err => {
+                console.log(err)
+                res.send({status:2, msg:'数据库操作出错'})
+            })
+        } else {
+            res.send({status:1, msg:'文档不存在'})
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({status:2, msg:'数据库操作出错'})
+    })
+})
+
+// 面签发布
+router.post('/release/end', (req, res, next) => {
+    const endOptions = req.body
+    const {doc_id} = endOptions
+    console.log(doc_id, endOptions)
+    // 文档是否存在
+    documentModel.findOne(doc_id)
+    .then(item => {
+        if(item){// exists doc, update doc_id
+            documentModel.releaseDocUpdata(endOptions)
+            .then(doc => {
+                res.send({status:0, data:doc})
+            })
+            .catch(err => {
+                console.log(err)
+                res.send({status:2, msg:'数据库操作出错'})
+            })
+        } else {
+            res.send({status:1, msg:'文档不存在'})
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({status:2, msg:'数据库操作出错'})
+    })
+})
+// 面签结束
+router.post('/complete', (req, res, next) => {
+    // 设置文档状态为end 合成签署后的文档
+})
+
 module.exports = router;

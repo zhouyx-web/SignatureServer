@@ -63,13 +63,49 @@ const documentTask = {
     },
     /**
      * 签署文档预发布
-     * 设置：doc_name, doc_mode, creator_id, max_sign_num, re_sign
+     * 设置：doc_name, doc_mode, creator_id, max_sign_num, re_sign, doc_id
      * @param {*} updateOptions 对数据库中的文档信息进行更新
      * @returns promise
      */
     prepareReleaseUpdate(updateOptions){
         const { doc_name, doc_mode, creator_id, max_sign_num, re_sign, doc_id } = updateOptions
         const sql = `UPDATE documents SET doc_name='${doc_name}', doc_status='unpublish', doc_mode='${doc_mode}', creator_id='${creator_id}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(doc => {
+                resolve(doc)
+            })
+            .catch(err => {
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 保存签署区域
+     * @param {*} options 签署区域对象JSON字符串 doc_id
+     * @returns propmise
+     */
+    signAreaUpdata(options){
+        const {sign_area, doc_id} = options
+        const sql = `UPDATE documents SET sign_area='${sign_area}' WHERE doc_id='${doc_id}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(doc => {
+                resolve(doc)
+            })
+            .catch(err => {
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 文档发布更新
+     * @param {*} endOptions release_time, end_time, doc_status, doc_id
+     * @returns promise
+     */
+    releaseDocUpdata(endOptions){
+        const {release_time, end_time, doc_status, doc_id} = endOptions
+        const sql = `UPDATE documents SET release_time='${release_time}', doc_status='${doc_status}', end_time='${end_time}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {

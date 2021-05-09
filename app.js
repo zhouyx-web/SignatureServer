@@ -29,7 +29,9 @@ app.use(express.urlencoded({ extended: false }));
 // 声明使用解析cookie的中间件
 app.use(cookieParser());
 // 声明使用静态中间件 一般是网页资源静态资源文件
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'),{setHeaders:function(res, path){
+  res.set('Access-Control-Allow-Origin','*')
+}}));
 
 // 声明使用路由器中间件
 app.use('/manage/docs', documentRouter);
