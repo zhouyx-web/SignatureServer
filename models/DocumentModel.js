@@ -104,8 +104,8 @@ const documentTask = {
      * @returns propmise
      */
     signAreaUpdata(options){
-        const {sign_area, doc_id} = options
-        const sql = `UPDATE documents SET sign_area='${sign_area}', doc_status='unpublish' WHERE doc_id='${doc_id}';`
+        const {sign_area, doc_id, valid_time} = options
+        const sql = `UPDATE documents SET sign_area='${sign_area}', doc_status='unpublish', valid_time='${valid_time}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {
