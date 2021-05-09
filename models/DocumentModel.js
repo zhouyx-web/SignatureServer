@@ -103,7 +103,7 @@ const documentTask = {
      * @param {*} options 签署区域对象JSON字符串 doc_id
      * @returns propmise
      */
-    signAreaUpdata(options){
+    signAreaUpdate(options){
         const {sign_area, doc_id, valid_time} = options
         const sql = `UPDATE documents SET sign_area='${sign_area}', doc_status='unpublish', valid_time='${valid_time}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
@@ -121,9 +121,27 @@ const documentTask = {
      * @param {*} endOptions release_time, end_time, doc_status, doc_id
      * @returns promise
      */
-    releaseDocUpdata(endOptions){
+    releaseDocUpdate(endOptions){
         const {release_time, end_time, doc_status, doc_id} = endOptions
         const sql = `UPDATE documents SET release_time='${release_time}', doc_status='${doc_status}', end_time='${end_time}' WHERE doc_id='${doc_id}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(doc => {
+                resolve(doc)
+            })
+            .catch(err => {
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 结束文档的签署
+     * @param {*} doc_id 要结束的文档id 
+     * @param {*} end_time 结束时间
+     * @returns promise
+     */
+    signEndUpdate(doc_id, end_time, ){
+        const sql = `UPDATE documents SET doc_status='end', end_time='${end_time}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {

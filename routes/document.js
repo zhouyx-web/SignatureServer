@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const mergeSignDoc = require('../utils/mergeSignDoc')
 
 const documentModel = require('../models/documentModel')
 
@@ -149,7 +150,7 @@ router.post('/release/second', (req, res, next) => {
     documentModel.findOne(doc_id)
     .then(item => {
         if(item){// exists doc, update doc_id
-            documentModel.signAreaUpdata(signArea)
+            documentModel.signAreaUpdate(signArea)
             .then(doc => {
                 res.send({status:0, data:doc})
             })
@@ -176,7 +177,7 @@ router.post('/release/end', (req, res, next) => {
     documentModel.findOne(doc_id)
     .then(item => {
         if(item){// exists doc, update doc_id
-            documentModel.releaseDocUpdata(endOptions)
+            documentModel.releaseDocUpdate(endOptions)
             .then(doc => {
                 res.send({status:0, data:doc})
             })
@@ -194,8 +195,38 @@ router.post('/release/end', (req, res, next) => {
     })
 })
 // 面签结束
-router.post('/complete', (req, res, next) => {
-    // 设置文档状态为end 合成签署后的文档
+router.post('/sign-end', (req, res, next) => {
+    // 设置文档状态为end 
+    const {doc_id, end_time, doc_path, sign_area} = req.body
+    console.log('sign-end', doc_id, end_time, sign_area)
+    documentModel.findOne(doc_id)
+    .then(item => {
+        if(item){// exists doc, update doc_id
+            // 合成签署的文档
+            mergeSignDoc({doc_id, doc_path, sign_area})
+            .then(() => { // 签名与文档合并成功
+                // 更改文档状态
+                documentModel.signEndUpdate(doc_id, end_time)
+                .then(doc => {
+                    res.send({status:0, data:doc})
+                })
+                .catch(err => {
+                    console.log(err)
+                    res.send({status:2, msg:'数据库操作出错'})
+                })
+            })
+            .catch(err => {
+                console.log(err)
+                res.send({status:3, msg:'合并失败'})
+            })
+        } else {
+            res.send({status:1, msg:'文档不存在'})
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({status:2, msg:'数据库操作出错'})
+    })
 })
 
 // 根据doc_status获取文档列表供前台显示
