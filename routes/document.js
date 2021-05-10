@@ -250,5 +250,25 @@ router.get('/list', (req, res, next) => {
         })
     })
 })
+// 获取签署的文档信息
+// 根据doc_status获取文档列表供前台显示
+router.get('/get-doc', (req, res, next) => {
+    const {doc_id} = req.query
+    console.log(doc_id)
+    documentModel.findOne(doc_id)
+    .then(doc => {
+        res.send({
+            status:0,
+            data:doc
+        })
+    })
+    .catch(err => {
+        console.log(err)
+        res.send({
+            status:1,
+            msg:'服务器错误！'
+        })
+    })
+})
 
 module.exports = router;
