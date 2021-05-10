@@ -1,18 +1,15 @@
-// 连接查询
 const express = require('express');
 const customMysql = require('../config/basicConnection');
 
-const connectTask = {
-    /**
-     * users/sign表
-     * @param {*} doc_id 
-     * @returns 
-     */
-    find(doc_id) {
-        const sql = `SELECT autograph_path FROM visitors,sign WHERE _id=user_id AND doc_id='${doc_id}' AND sign_status=1`
+const visitorsTask = {
+    create(uid) {
+        const sql = `INSERT INTO visitors (_id)
+                    VALUES
+                    ('${uid}');`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(results => {
+                // 以数组的形式返回签署人id
                 resolve(results)
             })
             .catch(err => { // 将错误一直传递下去，在路由中处理
@@ -22,4 +19,4 @@ const connectTask = {
     },
 }
 
-module.exports = connectTask
+module.exports = visitorsTask

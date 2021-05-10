@@ -8,6 +8,7 @@ var logger = require('morgan');
 
 var documentRouter = require('./routes/document');
 var usersRouter = require('./routes/users');
+var signRouter = require('./routes/signature')
 
 // 获取express实例
 var app = express();
@@ -37,6 +38,7 @@ app.use(express.static(path.join(__dirname, 'public'),{setHeaders:function(res, 
 app.use('/manage/docs', documentRouter);
 // 路由中间件讲究的是顺序，前一个匹配了，后面的就不会匹配，除非手动调用next()传递给下一个路由中间件
 app.use('/manage/user', usersRouter);
+app.use('/manage/sign', signRouter);
 
 // catch 404 and forward to error handler
 /**
