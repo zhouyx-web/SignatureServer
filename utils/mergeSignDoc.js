@@ -6,14 +6,15 @@ const { PDFDocument } = pdfLib;
 
 /**
  * 读入png图片
- * @param {*} imgPathArr 图片路径
+ * @param {*} imgNameArr 图片路径
  */
-async function readPNG(imgPathArr, pdfDoc) {
+async function readPNG(imgNameArr, pdfDoc) {
     console.log('readPNG 4')
-    let length = imgPathArr.length
+    const path = 'F:/Web-Projects/workspace/server-signature/public/upload/autograph/'
+    let length = imgNameArr.length
     const pngImgArr = []
     for (let i = 0; i < length; i++) {
-        let pngImageBytes = await fs.readFileSync(imgPathArr[i])
+        let pngImageBytes = await fs.readFileSync(path + imgNameArr[i])
         let pngImg = await pdfDoc.embedPng(pngImageBytes)
         pngImgArr.push(pngImg)
     }
@@ -47,17 +48,17 @@ function figureSignWH(areaW, areaH, itemW, itemH, itemN) {
 /**
  * 合并步骤的核心函数
  * @param {*} docPath 文档路径
- * @param {*} imgPathArr 图片路径
+ * @param {*} imgNameArr 图片路径
  * @param {*} sign_area 签名区域
  * @returns promise 指示合并失败、成功
  */
-function mergeCoreFunc(doc_id, doc_path, imgPathArr, sign_area) {
+function mergeCoreFunc(doc_id, doc_path, imgNameArr, sign_area) {
     console.log('mergeCoreFunc 2')
     return new Promise(async (resolve, reject) => {
         // 文档路径
         const docPath = doc_path + '/' + doc_id
         const docSavePath = doc_path + '/sign-docs/' + doc_id
-        const itemN = imgPathArr.length
+        const itemN = imgNameArr.length
         // 签名区域
         const { top, left, width, height, pageNumber } = sign_area
         // 签名宽高
@@ -70,7 +71,7 @@ function mergeCoreFunc(doc_id, doc_path, imgPathArr, sign_area) {
             const page = pdfDoc.getPages()[pageNumber-1]
             const pageHeight = page.getHeight()
             // 读取图片
-            const pngImgArr = await readPNG(imgPathArr, pdfDoc)
+            const pngImgArr = await readPNG(imgNameArr, pdfDoc)
             // 合并
             for (let i = 0; i < itemN; i++) {
                 // 每个图片的起点坐标
@@ -107,9 +108,9 @@ function mergeSignDoc(options) {
     // 根据doc_id查找sign表，拿到签署人的id 根据签署人的id查找users表，拿到签名保存路径
     return connectModel.find(doc_id)
     .then(results => {
-        const imgPathArr = results.map(item => item.autograph_path)
+        const imgNameArr = results.map(item => item.autograph_path)
         // 合并 返回成功或者失败
-        return mergeCoreFunc(doc_id, doc_path, imgPathArr, sign_area)
+        return mergeCoreFunc(doc_id, doc_path, imgNameArr, sign_area)
     })
     .catch(err => {
         console.log('mergeSignDoc',err)

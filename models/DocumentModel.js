@@ -17,7 +17,7 @@ const documentTask = {
             customMysql.query(sql)
                 .then(results => {
                     // 这个results可能是个空数组
-                    resolve(results[0])
+                    resolve(results[0] || {})
                 })
                 .catch(err => { // 将错误一直传递下去，在路由中处理
                     reject(err)
@@ -146,6 +146,22 @@ const documentTask = {
             customMysql.query(sql)
             .then(doc => {
                 resolve(doc)
+            })
+            .catch(err => {
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 
+     * @param {*} doc_id 签署人数加1
+     */
+    updateSignedNum(doc_id){
+        const sql = `UPDATE documents SET signed_num=signed_num+1  WHERE doc_id='${doc_id}';`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(() => {
+                resolve()
             })
             .catch(err => {
                 reject(err)

@@ -3,9 +3,9 @@ const customMysql = require('../config/basicConnection');
 
 const visitorsTask = {
     create(uid) {
-        const sql = `INSERT INTO visitors (_id)
+        const sql = `INSERT INTO visitors (_id, autograph_path)
                     VALUES
-                    ('${uid}');`
+                    ('${uid}', '${uid}.png');`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(results => {

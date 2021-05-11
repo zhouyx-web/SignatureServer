@@ -45,16 +45,31 @@ const signTask = {
      * 
      * @param {*} doc_id 签署的文档
      * @param {*} user_id 签署的用户id
-     * @param {*} sign_status 签署状态 0 未提交
      */
-    create(doc_id, user_id, sign_status=0){
+    create(doc_id, user_id){
         const sql = `INSERT INTO sign (doc_id, user_id, sign_status)
                     VALUES
-                    ('${doc_id}', '${user_id}', ${sign_status});`
+                    ('${doc_id}', '${user_id}', 0);`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(results => {
-                // 以数组的形式返回签署人id
+                resolve(results)
+            })
+            .catch(err => { // 将错误一直传递下去，在路由中处理
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 更新签署状态和签署时间
+     * @param {*} doc_id 
+     * @param {*} user_id 
+     */
+    update(doc_id, user_id){
+        const sql = `UPDATE sign SET sign_status=1, sign_time=${Date.now()} WHERE doc_id='${doc_id}' AND user_id='${user_id}' AND sign_status=0;`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(results => {
                 resolve(results)
             })
             .catch(err => { // 将错误一直传递下去，在路由中处理
