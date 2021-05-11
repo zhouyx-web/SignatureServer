@@ -29,8 +29,8 @@ const documentTask = {
      * @param {*} doc_status 文档状态 create,unpublish,ongoing,end
      * @returns promise
      */
-    find(doc_status){
-        const sql = `select * from documents where doc_status='${doc_status}';`
+    find(doc_status, time_type){
+        const sql = `select * from documents where doc_status='${doc_status}' order by ${time_type} desc;`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {

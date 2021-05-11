@@ -231,9 +231,9 @@ router.post('/sign-end', (req, res, next) => {
 
 // 根据doc_status获取文档列表供前台显示
 router.get('/list', (req, res, next) => {
-    const {doc_status} = req.query
-    console.log(doc_status)
-    documentModel.find(doc_status)
+    const {doc_status, time_type} = req.query
+    console.log(doc_status, time_type)
+    documentModel.find(doc_status, time_type)
     .then(results => {
         console.log(results[0].sign_area)
         res.send({
