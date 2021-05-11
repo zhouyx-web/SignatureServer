@@ -270,5 +270,16 @@ router.get('/get-doc', (req, res, next) => {
         })
     })
 })
-
+// 下载文件
+const dowloadPath = dirDocsPath + '/sign-docs/'
+router.get('/download', (req, res, next) => {
+    const {doc_id} = req.query
+    fs.access(dowloadPath + doc_id, err => {
+        if(!err){
+            res.download(dowloadPath + doc_id)
+        } else {
+            res.send({status:1, msg:'文件不存在'})
+        }
+    })
+})
 module.exports = router;

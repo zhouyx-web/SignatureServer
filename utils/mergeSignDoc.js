@@ -63,7 +63,7 @@ function mergeCoreFunc(doc_id, doc_path, imgNameArr, sign_area) {
         const { top, left, width, height, pageNumber } = sign_area
         // 签名宽高
         try {
-            let initItemW = 100, initItemH = 40
+            let initItemW = 100, initItemH = 50
             // 计算满足条件的签名项高和宽 行最大容纳的项数
             const {itemW, itemH, max_x_num, max_y_num} = figureSignWH(width, height, initItemW, initItemH, itemN)
             // 读取pdf文件
