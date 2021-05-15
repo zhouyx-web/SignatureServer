@@ -45,4 +45,9 @@ router.get('/get-uid', (req, res, next) => {
     })
 })
 
+// 用户注册
+router.post('/register', (req, res, next) => {
+  
+})
+
 module.exports = router;

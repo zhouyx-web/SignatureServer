@@ -24,7 +24,7 @@ app.set('view engine', 'jade');
 // 在开发环境下输出请求日志
 app.use(logger('dev'));
 // 解析http请求中的json数据 // 请求体参数是json结构: {name: tom, pwd: 123}
-app.use(express.json());
+app.use(express.json({limit:"2mb"}));
 // 声明使用解析POST请求的中间件 // 请求体参数是: name=tom&pwd=123
 app.use(express.urlencoded({ extended: false }));
 // 声明使用解析cookie的中间件

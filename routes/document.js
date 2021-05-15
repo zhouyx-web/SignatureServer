@@ -58,12 +58,14 @@ router.post('/upload', (req, res, next) => {
         }
         // upload success
         var file = req.file
+        var {creator_id} = req.query
         const fileInfo = {
             doc_id: file.filename,
             doc_name: file.originalname,
             doc_path: dirDocsPath,
             create_time: Date.now(),
-            doc_status: 'create', // 创建
+            doc_status: 'unpublish', // 未发布状态
+            creator_id
         }
         documentModel.create(fileInfo)
             .then(() => { // 写入数据库成功
@@ -114,15 +116,15 @@ router.post('/delete', (req, res) => {
     })
 })
 
-// 文档预发布，保存设置信息
-router.post('/release/first', (req, res, next) => {
+// 文档预发布，保存设置信息 basic
+router.post('/release/basic', (req, res, next) => {
     const updateOptions = req.body
     const {doc_id} = updateOptions
     console.log(doc_id)
     // 文档是否存在
-    documentModel.findOne(doc_id)
+    documentModel.findOne(doc_id, 'unpublish')
     .then(item => {
-        if(item){// exists doc, update doc_id
+        if(item.doc_id){// exists doc, update doc_id
             documentModel.prepareReleaseUpdate(updateOptions)
             .then(doc => {
                 res.send({status:0, data:doc})
@@ -132,7 +134,7 @@ router.post('/release/first', (req, res, next) => {
                 res.send({status:2, msg:'数据库操作出错'})
             })
         } else {
-            res.send({status:1, msg:'文档不存在'})
+            res.send({status:1, msg:'文档不存在或已经发布、结束'})
         }
     })
     .catch(err => {
@@ -141,15 +143,15 @@ router.post('/release/first', (req, res, next) => {
     })
 })
 
-// 设置签署面签区域
-router.post('/release/second', (req, res, next) => {
+// 设置签署面签区域 sign-area
+router.post('/release/sign-area', (req, res, next) => {
     const signArea = req.body
     const {sign_area, doc_id} = signArea
     console.log(sign_area, doc_id)
     // 文档是否存在
-    documentModel.findOne(doc_id)
+    documentModel.findOne(doc_id, 'unpublish')
     .then(item => {
-        if(item){// exists doc, update doc_id
+        if(item.doc_id){// exists doc, update doc_id
             documentModel.signAreaUpdate(signArea)
             .then(doc => {
                 res.send({status:0, data:doc})
@@ -159,7 +161,7 @@ router.post('/release/second', (req, res, next) => {
                 res.send({status:2, msg:'数据库操作出错'})
             })
         } else {
-            res.send({status:1, msg:'文档不存在'})
+            res.send({status:1, msg:'文档不存在或已经发布、结束'})
         }
     })
     .catch(err => {
@@ -168,15 +170,15 @@ router.post('/release/second', (req, res, next) => {
     })
 })
 
-// 面签发布
-router.post('/release/end', (req, res, next) => {
+// 面签发布 confirm
+router.post('/release/confirm', (req, res, next) => {
     const endOptions = req.body
     const {doc_id} = endOptions
     console.log(doc_id, endOptions)
     // 文档是否存在
-    documentModel.findOne(doc_id)
+    documentModel.findOne(doc_id, 'unpublish')
     .then(item => {
-        if(item){// exists doc, update doc_id
+        if(item.doc_id){// exists doc, update doc_id
             documentModel.releaseDocUpdate(endOptions)
             .then(doc => {
                 res.send({status:0, data:doc})
@@ -186,7 +188,7 @@ router.post('/release/end', (req, res, next) => {
                 res.send({status:2, msg:'数据库操作出错'})
             })
         } else {
-            res.send({status:1, msg:'文档不存在'})
+            res.send({status:1, msg:'文档不存在或已经发布、结束'})
         }
     })
     .catch(err => {
@@ -231,9 +233,9 @@ router.post('/sign-end', (req, res, next) => {
 
 // 根据doc_status获取文档列表供前台显示
 router.get('/list', (req, res, next) => {
-    const {doc_status, time_type} = req.query
+    const {doc_status, time_type, creator_id} = req.query
     console.log(doc_status, time_type)
-    documentModel.find(doc_status, time_type)
+    documentModel.find(doc_status, time_type, creator_id)
     .then(results => {
         console.log(results[0].sign_area)
         res.send({
@@ -250,9 +252,8 @@ router.get('/list', (req, res, next) => {
         })
     })
 })
-// 获取签署的文档信息
-// 根据doc_status获取文档列表供前台显示
-router.get('/get-doc', (req, res, next) => {
+// 获取签署的文档信息 info
+router.get('/info', (req, res, next) => {
     const {doc_id} = req.query
     console.log(doc_id)
     documentModel.findOne(doc_id)
@@ -280,6 +281,18 @@ router.get('/download', (req, res, next) => {
         } else {
             res.send({status:1, msg:'文件不存在'})
         }
+    })
+})
+
+// 尝试开启补签
+router.post('/repeat-sign', (req, res, next) => {
+    const {doc_id} = req.body
+    documentModel.repeatSign(doc_id)
+    .then(() => {
+        res.send({status:0, data:{doc_id}})
+    })
+    .catch(err => {
+        res.send({status:1, msg:'此文档不允许补签，或补签次数已用完'})
     })
 })
 module.exports = router;

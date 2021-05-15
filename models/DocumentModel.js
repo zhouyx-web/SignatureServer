@@ -6,13 +6,18 @@ const customMysql = require('../config/basicConnection');
 
 const documentTask = {
     /**
-     * 查询一个用户是否存在，并且以对象或者JSON数据返回该用户
-     * @param {*} username 用户名
-     * @param {*} password 密码
-     * @returns promise
+     * 查询文档或者某个状态的文档是否存在
+     * @param {*} doc_id 
+     * @param {*} doc_status 
+     * @returns 
      */
-    findOne(doc_id) {
-        const sql = `select * from documents where doc_id='${doc_id}';`
+    findOne(doc_id, doc_status) {
+        let sql
+        if(doc_status){
+            sql = `select * from documents where doc_id='${doc_id}' and doc_status='${doc_status}';`
+        } else {
+            sql = `select * from documents where doc_id='${doc_id}';`
+        }
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -29,8 +34,8 @@ const documentTask = {
      * @param {*} doc_status 文档状态 create,unpublish,ongoing,end
      * @returns promise
      */
-    find(doc_status, time_type){
-        const sql = `select * from documents where doc_status='${doc_status}' order by ${time_type} desc;`
+    find(doc_status, time_type, creator_id){
+        const sql = `select * from documents where doc_status='${doc_status}' and creator_id='${creator_id}' order by ${time_type} desc;`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -48,8 +53,8 @@ const documentTask = {
      * @returns promise
      */
     create(fileObj) {
-        const { doc_id, doc_name, doc_path, doc_status, create_time } = fileObj
-        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status, create_time) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', '${doc_status}', '${create_time}');`
+        const { doc_id, doc_name, doc_path, doc_status, create_time, creator_id, } = fileObj
+        const sql = `INSERT INTO documents (doc_id, doc_name, doc_path, doc_status, create_time, creator_id) VALUES ('${doc_id}', '${doc_name}', '${doc_path}', '${doc_status}', '${create_time}', '${creator_id}');`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
                 .then(results => {
@@ -86,8 +91,8 @@ const documentTask = {
      * @returns promise
      */
     prepareReleaseUpdate(updateOptions){
-        const { doc_name, doc_mode, creator_id, max_sign_num, re_sign, doc_id } = updateOptions
-        const sql = `UPDATE documents SET doc_name='${doc_name}', doc_mode='${doc_mode}', creator_id='${creator_id}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
+        const { doc_name, doc_mode, max_sign_num, re_sign, doc_id } = updateOptions
+        const sql = `UPDATE documents SET doc_name='${doc_name}', doc_mode='${doc_mode}', max_sign_num=${max_sign_num}, re_sign='${re_sign}' WHERE doc_id='${doc_id}';`
         return new Promise((resolve, reject) => {
             customMysql.query(sql)
             .then(doc => {
@@ -162,6 +167,32 @@ const documentTask = {
             customMysql.query(sql)
             .then(() => {
                 resolve()
+            })
+            .catch(err => {
+                reject(err)
+            })
+        })
+    },
+    /**
+     * 尝试开启补签
+     * 如果文档可以补签，则修改 doc_status re_sign max_sign_num doc_mode
+     * @param {*} doc_id 
+     * @returns 
+     */
+    repeatSign(doc_id){
+        const sql= `UPDATE documents
+                    SET doc_status='ongoing', re_sign='re_signed', max_sign_num=10000, doc_mode='unlimited'
+                    WHERE doc_id='${doc_id}' AND re_sign='allow'`
+        return new Promise((resolve, reject) => {
+            customMysql.query(sql)
+            .then(results => {
+                // console.log(results.affectedRows)
+                console.log(results.changedRows)
+                if(results.affectedRows > 0){
+                    resolve()
+                } else {
+                    reject()
+                }
             })
             .catch(err => {
                 reject(err)

@@ -62,7 +62,7 @@ router.post('/commit', (req, res, next) => {
                 })
                 .catch(err => {
                     console.log(err)
-                    res.send({ status: 2, msg: '签署失败' })
+                    res.send({ status: 2, msg: '您已经签署过此文件' })
                 })
             })
             .catch(err => {

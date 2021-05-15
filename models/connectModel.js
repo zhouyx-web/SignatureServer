@@ -4,7 +4,7 @@ const customMysql = require('../config/basicConnection');
 
 const connectTask = {
     /**
-     * users/sign表
+     * visitors/sign表
      * @param {*} doc_id 
      * @returns 
      */
