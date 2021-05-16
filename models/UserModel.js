@@ -33,7 +33,21 @@ const usersTask = {
      * @param {*} password 
      */
     create(username, password) {
-
+        const _id = `user-${Date.now()}`
+        const sql = `INSERT INTO users (_id, username, password) VALUES ('${_id}','${username}','${password}');`
+        return new Promise ((resolve, reject) => {
+            customMysql.query(sql)
+            .then(results => {
+                if(results.affectedRows > 0){
+                    resolve(_id)
+                } else {
+                    reject()
+                }
+            })
+            .catch(err => { 
+                reject(err)
+            })
+        })    
     },
     /**
      * 修改用户密码，返回修改后的用户对象
@@ -41,7 +55,21 @@ const usersTask = {
      * @param {*} newpwd 
      */
     updata(username, newpwd) {
-
+        const sql = `update users set password='${newpwd}' where username='${username}';`
+        return new Promise ((resolve, reject) => {
+            customMysql.query(sql)
+            .then(results => {
+                // console.log(results)
+                if(results.affectedRows > 0){
+                    resolve()
+                } else {
+                    reject()
+                }
+            })
+            .catch(err => { 
+                reject(err)
+            })
+        })
     },
 }
 

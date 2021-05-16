@@ -237,7 +237,6 @@ router.get('/list', (req, res, next) => {
     console.log(doc_status, time_type)
     documentModel.find(doc_status, time_type, creator_id)
     .then(results => {
-        console.log(results[0].sign_area)
         res.send({
             status:0,
             length:results.length,
